@@ -50,13 +50,14 @@ INCLUDE( "@PROJECT_SOURCE_DIR@/cmake/MacroCheckPackageLibs.cmake" )
 CHECK_PACKAGE_LIBS( CaloSoftWare CaloSoftWare )
 
 
-
-
-# ---------- libraries dependencies -------------------------------------------
-# this sets CaloSoftWare_${COMPONENT}_LIB_DEPENDS variables
-INCLUDE( "${CaloSoftWare_ROOT}/lib/cmake/CaloSoftWareLibDeps.cmake" )
- 
-
+# ---------- dependencies -----------------------------------------------------
+INCLUDE( "@CMAKE_INSTALL_PREFIX@/cmake/MacroExportPackageDeps.cmake" )
+# exports following package dependencies (if set)
+# first argument of macro should be the package name
+SET( CaloSoftWare_DEPENDS_INCLUDE_DIRS  @CaloSoftWare_DEPENDS_INCLUDE_DIRS@ )
+SET( CaloSoftWare_DEPENDS_LIBRARY_DIRS  @CaloSoftWare_DEPENDS_LIBRARY_DIRS@ )
+SET( CaloSoftWare_DEPENDS_LIBRARIES  @CaloSoftWare_DEPENDS_LIBRARIES@ )
+EXPORT_PACKAGE_DEPENDENCIES( CaloSoftWare )
 
 
 # ---------- final checking ---------------------------------------------------
