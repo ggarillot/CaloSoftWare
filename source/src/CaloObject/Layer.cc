@@ -107,7 +107,11 @@ std::vector<double> Layer::getMultiplicitiesError() const
 	{
 		double mulErr ;
 		if ( !nDetected.at(0) )
+		{
 			mulErr = 0.0 ;
+			toReturn.push_back(mulErr) ;
+			continue ;
+		}
 
 		double var = multiSquareSumVec.at(i)/nDetected.at(i) - (multiSumVec.at(i)/nDetected.at(i))*(multiSumVec.at(i)/nDetected.at(i)) ;
 
