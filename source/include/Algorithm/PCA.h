@@ -5,25 +5,27 @@
 #include <Eigen/Dense>
 #include <vector>
 
-typedef  std::vector< std::vector<double> > VectorList;
+typedef std::vector< std::vector<double> > VectorList ;
 
 namespace algorithm
 {
 
-  class PCA {  
-  public:  
-    PCA(VectorList &vec);
-    //vectorlist fill with for example 3 vectors (x,y,z) with n values each
-    ~PCA(){;}
+class PCA
+{
+	public :
+		PCA(VectorList &vec) ;
+		//vectorlist fill with for example 3 vectors (x,y,z) with n values each
+		~PCA(){;}
 
-    inline Eigen::MatrixXd eigenVectors(){ return _eigenVectors; }
-    inline std::vector<double> &eigenValues(){ return _eigenValues; }
+		inline Eigen::MatrixXd eigenVectors() const { return _eigenVectors ; }
+		inline const std::vector<double>& eigenValues() const { return _eigenValues ; }
 
-  protected:
-    std::vector<double> _eigenValues;
-    Eigen::MatrixXd _eigenVectors;
-    bool trackSuccess;
-  };
+	protected :
+		std::vector<double> _eigenValues ;
+		Eigen::MatrixXd _eigenVectors ;
+//		bool trackSuccess ;
+};
 
-}
+} //namespace algorithm
+
 #endif  //  PCA_HH

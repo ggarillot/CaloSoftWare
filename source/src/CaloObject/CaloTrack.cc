@@ -3,9 +3,11 @@
 namespace caloobject
 {
 
-  CaloTrack::CaloTrack(std::vector<caloobject::CaloCluster*> &vec)
-  {
-    clusters=vec;
-  }
-  
+CaloTrack::CaloTrack(Cluster2DVec& vec)
+	: clusters(vec) ,
+	  _params()
+{
+
 }
+
+} //namespace caloobject

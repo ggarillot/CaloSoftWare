@@ -60,6 +60,12 @@ SET( CaloSoftWare_DEPENDS_LIBRARIES  @CaloSoftWare_DEPENDS_LIBRARIES@ )
 EXPORT_PACKAGE_DEPENDENCIES( CaloSoftWare )
 
 
+# ---------- libraries dependencies -------------------------------------------
+# this sets CaloSoftWare_${COMPONENT}_LIB_DEPENDS variables
+INCLUDE( "${CaloSoftWare_ROOT}/lib/cmake/CaloSoftWareLibDeps.cmake" )
+
+
+
 # ---------- final checking ---------------------------------------------------
 INCLUDE( FindPackageHandleStandardArgs )
 # set CaloSoftWare_FOUND to TRUE if all listed variables are TRUE and not empty

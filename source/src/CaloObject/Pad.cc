@@ -1,15 +1,13 @@
-#include "CaloObject/Asic.h"
+#include "CaloObject/Pad.h"
 
 #include <TEfficiency.h>
 
 namespace caloobject
 {
 
-Asic::Asic(int _id , int _difID)
+Pad::Pad(int _id)
 	: id(_id) ,
-	  difID(_difID) ,
-	  position() ,
-	  pads()
+	  position()
 {
 	thresholds.push_back(0) ;
 	nDetected.push_back(0) ;
@@ -19,7 +17,7 @@ Asic::Asic(int _id , int _difID)
 	multiplicities.push_back(0.0) ;
 }
 
-void Asic::reset()
+void Pad::reset()
 {
 	nTracks = 0 ;
 	nDetected.clear() ;
@@ -29,12 +27,9 @@ void Asic::reset()
 	multiSumVec.clear() ;
 	multiSquareSumVec.clear() ;
 	multiplicities.clear() ;
-
-	for ( PadMap::const_iterator it = pads.begin() ; it != pads.end() ; ++it )
-		it->second->reset() ;
 }
 
-void Asic::setThresholds(const std::vector<double>& thr)
+void Pad::setThresholds(const std::vector<double>& thr)
 {
 	reset() ;
 
@@ -46,12 +41,9 @@ void Asic::setThresholds(const std::vector<double>& thr)
 	multiSumVec = std::vector<double>(thresholds.size() , 0.0) ;
 	multiSquareSumVec = std::vector<double>(thresholds.size() , 0.0) ;
 	multiplicities = std::vector<double>(thresholds.size() , 0.0) ;
-
-	for ( PadMap::const_iterator it = pads.begin() ; it != pads.end() ; ++it )
-		it->second->setThresholds(thresholds) ;
 }
 
-std::vector<double> Asic::getEfficienciesError() const
+std::vector<double> Pad::getEfficienciesError() const
 {
 	std::vector<double> toReturn ;
 
@@ -73,7 +65,7 @@ std::vector<double> Asic::getEfficienciesError() const
 	return toReturn ;
 }
 
-std::array< std::vector<double> , 2> Asic::getEfficienciesBound() const
+std::array< std::vector<double> , 2> Pad::getEfficienciesBound() const
 {
 	constexpr double level = 0.683 ;
 
@@ -100,7 +92,7 @@ std::array< std::vector<double> , 2> Asic::getEfficienciesBound() const
 	return toReturn ;
 }
 
-std::vector<double> Asic::getMultiplicitiesError() const
+std::vector<double> Pad::getMultiplicitiesError() const
 {
 	std::vector<double> toReturn ;
 
@@ -129,12 +121,9 @@ std::vector<double> Asic::getMultiplicitiesError() const
 	return toReturn ;
 }
 
-void Asic::update(const CLHEP::Hep3Vector& impactPos , CaloCluster2D* cluster)
+void Pad::update(CaloCluster2D* cluster)
 {
 	nTracks++ ;
-
-	Pad* pad = findPad(impactPos) ;
-	pad->update(cluster) ;
 
 	if (cluster)
 	{
@@ -160,13 +149,13 @@ void Asic::update(const CLHEP::Hep3Vector& impactPos , CaloCluster2D* cluster)
 	}
 }
 
-void Asic::updateEfficiencies()
+void Pad::updateEfficiencies()
 {
 	for ( unsigned int i = 0 ; i < efficiencies.size() ; ++i )
 		efficiencies.at(i) = 1.0*nDetected.at(i)/nTracks ;
 }
 
-void Asic::updateMultiplicities()
+void Pad::updateMultiplicities()
 {
 	for ( unsigned int i = 0 ; i < multiplicities.size() ; ++i )
 	{
@@ -177,74 +166,14 @@ void Asic::updateMultiplicities()
 	}
 }
 
-SDHCALAsic::SDHCALAsic(int _id, int _difID)
-	: Asic(_id , _difID)
+//===============
+//======SDHCALPad
+//===============
+
+SDHCALPad::SDHCALPad(int _id)
+	: Pad(_id)
 {
 }
 
-void SDHCALAsic::buildPads()
-{
-	for ( int i = 0 ; i < 64 ; i++ )
-	{
-		SDHCALPad* pad = new SDHCALPad(i) ;
-		pad->setAsic(this) ;
-		CLHEP::Hep3Vector padPos = position + 10.408*CLHEP::Hep3Vector(iPadTab[i] , jPadTab[i] , 0) ;
-		pad->setPosition(padPos) ;
-		pads.insert( std::make_pair(i , pad) ) ;
-	}
-}
-
-
-Pad* SDHCALAsic::findPad(const CLHEP::Hep3Vector& pos) const
-{
-	CLHEP::Hep3Vector posInAsic = pos - position ;
-	int i = static_cast<int>( posInAsic.x()/10.408 ) ;
-	int j = static_cast<int>( posInAsic.y()/10.408 ) ;
-
-	PadMap::const_iterator it = pads.find( padTab[i][j] ) ;
-	if ( it == pads.end() )
-	{
-		std::cout << "Error in SDHCALAsic::findPad : non existing pad" << std::endl ;
-		std::cout << "position.x() : " << position.x() << " , position.y() : " << position.y() << std::endl ;
-		std::cout << "pos.x() : " << pos.x() << " , pos.y() : " << pos.y() << std::endl ;
-		std::cout << "posInAsic.x() : " << posInAsic.x() << " , posInAsic.y() : " << posInAsic.y() << std::endl ;
-		std::cout << "i : " << i << " , j : " << j <<" , pad : " << padTab[i][j] << std::endl ;
-		return NULL ;
-	}
-
-	return it->second ;
-}
-
-const int SDHCALAsic::padTab[8][8] =
-{
-	{12,10, 8, 7, 5, 3, 1,17} ,   // \/
-	{13,11, 9, 6, 4, 2, 0,18} ,   // ||
-	{23,22,21,14,15,16,19,20} ,   // ||
-	{24,25,26,27,28,29,30,31} ,   //  I
-	{39,38,37,36,35,34,33,32} ,   // ||
-	{40,41,50,49,48,47,44,42} ,   // ||
-	{51,53,55,57,60,62,45,43} ,   // \/
-	{52,54,56,58,59,61,63,46} ,
-} ;
-const int SDHCALAsic::iPadTab[64] =
-{
-	1, 0, 1, 0, 1, 0, 1, 0, 0, 1,
-	0, 1, 0, 1, 2, 2, 2, 0, 1, 2,
-	2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
-	3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
-	5, 5, 5, 6, 5, 6, 7, 5, 5, 5,
-	5, 6, 7, 6, 7, 6, 7, 6, 7, 7,
-	6, 7, 6, 7
-} ;
-const int SDHCALAsic::jPadTab[64] =
-{
-	6, 6, 5, 5, 4, 4, 3, 3, 2, 2,
-	1, 1, 0, 0, 3, 4, 5, 7, 7, 6,
-	7, 2, 1, 0, 0, 1, 2, 3, 4, 5,
-	6, 7, 7, 6, 5, 4, 3, 2, 1, 0,
-	0, 1, 7, 7, 6, 6, 7, 5, 4, 3,
-	2, 0, 0, 1, 1, 2, 2, 3, 3, 4,
-	4, 5, 5, 6
-} ;
 
 } //namespace caloobject

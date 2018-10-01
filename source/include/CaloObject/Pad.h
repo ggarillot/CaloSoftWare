@@ -1,28 +1,28 @@
-#ifndef Asic_h
-#define Asic_h
+#ifndef Pad_h
+#define Pad_h
 
-#include <iostream>
+#include <limits>
+#include <map>
 #include <vector>
 #include <array>
-#include <cmath>
-#include <limits>
-#include <algorithm>
+
 #include <CLHEP/Vector/ThreeVector.h>
 
-#include "CaloObject/Pad.h"
+#include <CaloObject/CaloCluster.h>
+
 
 namespace caloobject
 {
 
-class Layer ;
+class Asic ;
 
-class Asic
+class Pad
 {
 	public :
-		Asic(int _id , int _difID = -1) ;
-		virtual ~Asic() = default ;
+		Pad(int _id) ;
+		virtual ~Pad() = default ;
 
-		void setLayer(caloobject::Layer* _layer) { layer = _layer ; }
+		void setAsic(caloobject::Asic* _asic) { asic = _asic ; }
 		void setPosition(CLHEP::Hep3Vector pos) { position = pos ; }
 
 		void setThresholds(const std::vector<double>& thr) ;
@@ -36,35 +36,24 @@ class Asic
 		virtual const std::vector<double>& getMultiplicities() { updateMultiplicities() ; return multiplicities ; }
 		virtual std::vector<double> getMultiplicitiesError() const ;
 
-
-		virtual Pad* findPad(const CLHEP::Hep3Vector& pos) const = 0 ;
-
 		inline int getID() const { return id ; }
-		inline int getDifID() const { return difID ; }
 		inline const CLHEP::Hep3Vector &getPosition() const { return position ; }
-		inline const PadMap& getPads() const { return pads ; }
 
-		virtual void update(const CLHEP::Hep3Vector& impactPos , CaloCluster2D* cluster = nullptr) ;
 
-		virtual void buildPads() = 0 ;
-
+		virtual void update(CaloCluster2D* cluster = nullptr) ;
 
 		void reset() ;
 
-
-		Asic(const Asic &toCopy) = delete ;
-		void operator=(const Asic &toCopy) = delete ;
+		Pad(const Pad &toCopy) = delete ;
+		void operator=(const Pad &toCopy) = delete ;
 
 	protected :
 		virtual void updateEfficiencies() ;
 		virtual void updateMultiplicities() ;
 
 	protected :
-
 		int id ;
-		int difID ;
-
-		caloobject::Layer* layer = nullptr ;
+		caloobject::Asic* asic = nullptr ;
 
 		int nTracks = 0 ;
 		std::vector<int> nDetected = {} ;
@@ -78,33 +67,23 @@ class Asic
 
 		std::vector<double> multiplicities = {} ;
 
-		CLHEP::Hep3Vector position ; //top left corner position
+		CLHEP::Hep3Vector position ;
 
-		PadMap pads ;
 } ;
 
-class SDHCALAsic : public Asic
+class SDHCALPad : public Pad
 {
 	public :
-		SDHCALAsic(int _id , int _difID) ;
-		virtual ~SDHCALAsic() = default ;
-
-		static const int padTab[8][8] ;
-		static const int iPadTab[64] ;
-		static const int jPadTab[64] ;
-
-		virtual Pad* findPad(const CLHEP::Hep3Vector& pos) const ;
-
-		virtual void buildPads() ;
-
+		SDHCALPad(int _id) ;
+		virtual ~SDHCALPad() = default ;
 
 	protected :
 
 } ;
 
-
 } //namespace caloobject
 
-typedef std::map<int , caloobject::Asic*> AsicMap ;
+typedef std::map<int , caloobject::Pad*> PadMap ;
 
-#endif //Asic_h
+
+#endif //Pad_h

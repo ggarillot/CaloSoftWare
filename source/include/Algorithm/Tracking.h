@@ -15,51 +15,51 @@
 
 namespace algorithm
 { 
-  struct TrackingParameterSetting{
-    float maxTransverseRatio;
-    float chiSquareLimit;
-    float cosThetaLimit;
-    float maxDistance;
-    int maxDiffBetweenLayer;
-    bool printDebug;
-  TrackingParameterSetting() : maxTransverseRatio(0.05) , 
-                               chiSquareLimit(100),
-                               cosThetaLimit(0.0),
-                               maxDistance(15.0),
-                               maxDiffBetweenLayer(2),
-                               printDebug(false)
-                               {;}
-  };
 
-  class Tracking
-  {
-  public:
-    Tracking(){;}
-    ~Tracking(){;}
-  
-    void Run(std::vector<caloobject::CaloCluster*> &vec, caloobject::CaloTrack* &track);
-    void TryToAddAClusterInTrack(caloobject::CaloCluster* cluster, caloobject::CaloTrack* &track);
-    void splitTrack(caloobject::CaloTrack*);    
-    inline void SetTrackingParameterSetting(TrackingParameterSetting params){settings=params;}
-    inline float getTransverseRatio(){return _transverseRatio;}
+struct TrackingParameterSetting
+{
+		float maxTransverseRatio = 1.0f ;
+		float chiSquareLimit = 100.0f ;
+		float cosThetaLimit = 0.0f ;
+		float maxDistance = 20.0f ;
+		int maxDiffBetweenLayer = 3 ;
+		unsigned int minNumberOfFiredLayers = 4 ;
+		bool printDebug = false ;
+} ;
 
-  private:
-    TrackingParameterSetting settings;
-    float _transverseRatio;
-    
-  };
+class Tracking
+{
+	public :
+		Tracking()
+			: settings()
+		{;}
+		~Tracking(){;}
+
+		void Run(std::vector<caloobject::CaloCluster2D*>& vec , caloobject::CaloTrack*& track) ;
+		void TryToAddAClusterInTrack(caloobject::CaloCluster2D* cluster , caloobject::CaloTrack*& track) ;
+		void splitTrack(caloobject::CaloTrack*) ;
+		inline void SetTrackingParameterSetting(TrackingParameterSetting params) { settings = params ; }
+		inline float getTransverseRatio() { return _transverseRatio ; }
+
+	private :
+		TrackingParameterSetting settings ;
+		float _transverseRatio = 0.0f ;
+} ;
 
 
-  class removeClusterFromTrackIfLayerBiggerThanValue
-  {
-  public:
-  //use :
-  //track->getClusters().erase( std::remove_if(track->getClusters().begin(), track->getClusters().end(), removeClusterFromTrackIfLayerBiggerThanValue(val) ) , track->getClusters().end() )
-  removeClusterFromTrackIfLayerBiggerThanValue(int val) : _value(val) {}
-    bool operator()(caloobject::CaloCluster* cluster) { return cluster->getLayerID() > _value;}
-  private:
-    int _value;
-  };
-  
-}
+class removeClusterFromTrackIfLayerBiggerThanValue
+{
+	public:
+		//use :
+		//track->getClusters().erase( std::remove_if(track->getClusters().begin(), track->getClusters().end(), removeClusterFromTrackIfLayerBiggerThanValue(val) ) , track->getClusters().end() )
+		removeClusterFromTrackIfLayerBiggerThanValue(int val)
+			: _value(val)
+		{}
+		bool operator()(caloobject::CaloCluster2D* cluster) { return cluster->getLayerID() > _value ; }
+	private:
+		int _value ;
+} ;
+
+}//namespace algorithm
+
 #endif

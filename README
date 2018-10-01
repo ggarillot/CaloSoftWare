@@ -1,5 +1,8 @@
 BUILD and install: 
 
+$ source getAndSourceEigen.sh
 $ mkdir build
-$ cmake -DCLHEP_DIR=${CLHEP} ../
+$ cmake -DCLHEP_DIR=${CLHEP} -DEIGEN3_INCLUDE_DIR=$EIGEN3_INCLUDE_DIR ../
 $ make install
+
+Example to use CaloSoftWare in https://github.com/arnaudsteen/HGCALMarlinProcessor.git and https://github.com/arnaudsteen/SDHCALMarlinProcessor.git

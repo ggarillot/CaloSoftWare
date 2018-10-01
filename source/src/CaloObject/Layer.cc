@@ -1,15 +1,14 @@
-#include "CaloObject/Asic.h"
+#include <CaloObject/Layer.h>
 
 #include <TEfficiency.h>
 
 namespace caloobject
 {
 
-Asic::Asic(int _id , int _difID)
+Layer::Layer(int _id)
 	: id(_id) ,
-	  difID(_difID) ,
 	  position() ,
-	  pads()
+	  asics()
 {
 	thresholds.push_back(0) ;
 	nDetected.push_back(0) ;
@@ -19,7 +18,7 @@ Asic::Asic(int _id , int _difID)
 	multiplicities.push_back(0.0) ;
 }
 
-void Asic::reset()
+void Layer::reset()
 {
 	nTracks = 0 ;
 	nDetected.clear() ;
@@ -30,11 +29,11 @@ void Asic::reset()
 	multiSquareSumVec.clear() ;
 	multiplicities.clear() ;
 
-	for ( PadMap::const_iterator it = pads.begin() ; it != pads.end() ; ++it )
+	for ( AsicMap::const_iterator it = asics.begin() ; it != asics.end() ; ++it )
 		it->second->reset() ;
 }
 
-void Asic::setThresholds(const std::vector<double>& thr)
+void Layer::setThresholds(const std::vector<double>& thr)
 {
 	reset() ;
 
@@ -47,11 +46,11 @@ void Asic::setThresholds(const std::vector<double>& thr)
 	multiSquareSumVec = std::vector<double>(thresholds.size() , 0.0) ;
 	multiplicities = std::vector<double>(thresholds.size() , 0.0) ;
 
-	for ( PadMap::const_iterator it = pads.begin() ; it != pads.end() ; ++it )
+	for ( AsicMap::const_iterator it = asics.begin() ; it != asics.end() ; ++it )
 		it->second->setThresholds(thresholds) ;
 }
 
-std::vector<double> Asic::getEfficienciesError() const
+std::vector<double> Layer::getEfficienciesError() const
 {
 	std::vector<double> toReturn ;
 
@@ -66,14 +65,13 @@ std::vector<double> Asic::getEfficienciesError() const
 		else
 			eff = static_cast<double>( nDetected.at(i) )/nTracks ;
 
-
 		effErr = sqrt( eff*(1-eff)/nTracks ) ;
 		toReturn.push_back(effErr) ;
 	}
 	return toReturn ;
 }
 
-std::array< std::vector<double> , 2> Asic::getEfficienciesBound() const
+std::array< std::vector<double> , 2> Layer::getEfficienciesBound() const
 {
 	constexpr double level = 0.683 ;
 
@@ -90,6 +88,7 @@ std::array< std::vector<double> , 2> Asic::getEfficienciesBound() const
 
 		double lowerBound = 0 ;
 		double upperBound = 0 ;
+
 		TEfficiency::BetaShortestInterval( level , a , b , lowerBound , upperBound ) ;
 
 		lowerBoundVec.push_back( lowerBound ) ;
@@ -100,7 +99,7 @@ std::array< std::vector<double> , 2> Asic::getEfficienciesBound() const
 	return toReturn ;
 }
 
-std::vector<double> Asic::getMultiplicitiesError() const
+std::vector<double> Layer::getMultiplicitiesError() const
 {
 	std::vector<double> toReturn ;
 
@@ -129,12 +128,12 @@ std::vector<double> Asic::getMultiplicitiesError() const
 	return toReturn ;
 }
 
-void Asic::update(const CLHEP::Hep3Vector& impactPos , CaloCluster2D* cluster)
+void Layer::update(const CLHEP::Hep3Vector& impactPos , CaloCluster2D* cluster)
 {
 	nTracks++ ;
 
-	Pad* pad = findPad(impactPos) ;
-	pad->update(cluster) ;
+	Asic* asic = findAsic(impactPos) ;
+	asic->update(impactPos , cluster) ;
 
 	if (cluster)
 	{
@@ -160,13 +159,13 @@ void Asic::update(const CLHEP::Hep3Vector& impactPos , CaloCluster2D* cluster)
 	}
 }
 
-void Asic::updateEfficiencies()
+void Layer::updateEfficiencies()
 {
 	for ( unsigned int i = 0 ; i < efficiencies.size() ; ++i )
 		efficiencies.at(i) = 1.0*nDetected.at(i)/nTracks ;
 }
 
-void Asic::updateMultiplicities()
+void Layer::updateMultiplicities()
 {
 	for ( unsigned int i = 0 ; i < multiplicities.size() ; ++i )
 	{
@@ -177,74 +176,92 @@ void Asic::updateMultiplicities()
 	}
 }
 
-SDHCALAsic::SDHCALAsic(int _id, int _difID)
-	: Asic(_id , _difID)
+
+SDHCALLayer::SDHCALLayer(int _id, int difL, int difC, int difR)
+	: Layer(_id)
 {
+	difID[0] = difL ;
+	difID[1] = difC ;
+	difID[2] = difR ;
 }
 
-void SDHCALAsic::buildPads()
+void SDHCALLayer::buildAsics()
 {
-	for ( int i = 0 ; i < 64 ; i++ )
+	for ( int j = 0 ; j < 3 ; j++ )
 	{
-		SDHCALPad* pad = new SDHCALPad(i) ;
-		pad->setAsic(this) ;
-		CLHEP::Hep3Vector padPos = position + 10.408*CLHEP::Hep3Vector(iPadTab[i] , jPadTab[i] , 0) ;
-		pad->setPosition(padPos) ;
-		pads.insert( std::make_pair(i , pad) ) ;
+		for ( int i = 1 ; i < 49 ; i++ )
+		{
+			SDHCALAsic* asic = new SDHCALAsic(i , difID[j]) ;
+			asic->setLayer(this) ;
+			CLHEP::Hep3Vector asicPos = position + 10.408*( (j*32 + jAsicTab[i-1]*8)*CLHEP::Hep3Vector(0 , 1 , 0) + iAsicTab[i-1]*8*CLHEP::Hep3Vector(1 , 0 , 0) ) ;
+			asic->setPosition(asicPos) ;
+			asic->buildPads() ;
+			asics.insert( std::make_pair(difID[j]*100+i , asic) ) ;
+		}
 	}
 }
 
-
-Pad* SDHCALAsic::findPad(const CLHEP::Hep3Vector& pos) const
+Asic* SDHCALLayer::findAsic(const CLHEP::Hep3Vector& pos) const
 {
-	CLHEP::Hep3Vector posInAsic = pos - position ;
-	int i = static_cast<int>( posInAsic.x()/10.408 ) ;
-	int j = static_cast<int>( posInAsic.y()/10.408 ) ;
+	CLHEP::Hep3Vector posInLayer = pos - position ;
 
-	PadMap::const_iterator it = pads.find( padTab[i][j] ) ;
-	if ( it == pads.end() )
+	int i = static_cast<int>( posInLayer.x()/83.264 ) ; //8*10.408 = 83.264
+	int j = static_cast<int>( posInLayer.y()/83.264 ) ;
+
+	if ( j/4 > 2 )
 	{
-		std::cout << "Error in SDHCALAsic::findPad : non existing pad" << std::endl ;
-		std::cout << "position.x() : " << position.x() << " , position.y() : " << position.y() << std::endl ;
-		std::cout << "pos.x() : " << pos.x() << " , pos.y() : " << pos.y() << std::endl ;
-		std::cout << "posInAsic.x() : " << posInAsic.x() << " , posInAsic.y() : " << posInAsic.y() << std::endl ;
-		std::cout << "i : " << i << " , j : " << j <<" , pad : " << padTab[i][j] << std::endl ;
+		std::cout << "Error in SDHCALLayer::findAsic : dif not possible" << std::endl ;
+		std::cout << "layer : " << id << std::endl ;
+		std::cout << "pos : " << pos << std::endl ;
+		std::cout << "posInLayer : " << posInLayer << std::endl ;
+		return NULL ;
+	}
+
+	int difj = difID[ j/4 ] ;
+
+	AsicMap::const_iterator it = asics.find( 100*difj + asicTab[i][j%4] ) ;
+	if ( it == asics.end() )
+	{
+		std::cout << "Error in SDHCALLayer::findAsic : non existing asic : "  << std::endl ;
+		std::cout << "dif : " << difj << " , iAsic : " << i << std::endl ;
 		return NULL ;
 	}
 
 	return it->second ;
 }
 
-const int SDHCALAsic::padTab[8][8] =
+
+const int SDHCALLayer::asicTab[12][4] =
 {
-	{12,10, 8, 7, 5, 3, 1,17} ,   // \/
-	{13,11, 9, 6, 4, 2, 0,18} ,   // ||
-	{23,22,21,14,15,16,19,20} ,   // ||
-	{24,25,26,27,28,29,30,31} ,   //  I
-	{39,38,37,36,35,34,33,32} ,   // ||
-	{40,41,50,49,48,47,44,42} ,   // ||
-	{51,53,55,57,60,62,45,43} ,   // \/
-	{52,54,56,58,59,61,63,46} ,
+	{ 4, 3, 2, 1},
+	{ 5, 6, 7, 8},
+	{12,11,10, 9},
+	{13,14,15,16},
+	{20,19,18,17},
+	{21,22,23,24},
+	{28,27,26,25},
+	{29,30,31,32},
+	{36,35,34,33},
+	{37,38,39,40},
+	{44,43,42,41},
+	{45,46,47,48},
 } ;
-const int SDHCALAsic::iPadTab[64] =
+
+const int SDHCALLayer::iAsicTab[48] =
 {
-	1, 0, 1, 0, 1, 0, 1, 0, 0, 1,
-	0, 1, 0, 1, 2, 2, 2, 0, 1, 2,
-	2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
-	3, 3, 4, 4, 4, 4, 4, 4, 4, 4,
-	5, 5, 5, 6, 5, 6, 7, 5, 5, 5,
-	5, 6, 7, 6, 7, 6, 7, 6, 7, 7,
-	6, 7, 6, 7
+	0, 0, 0, 0, 1, 1, 1, 1, 2,
+	2, 2, 2, 3, 3, 3, 3, 4, 4, 4,
+	4, 5, 5, 5, 5, 6, 6, 6, 6, 7,
+	7, 7, 7, 8, 8, 8, 8, 9, 9, 9,
+	9,10,10,10,10,11,11,11,11
 } ;
-const int SDHCALAsic::jPadTab[64] =
+const int SDHCALLayer::jAsicTab[48] =
 {
-	6, 6, 5, 5, 4, 4, 3, 3, 2, 2,
-	1, 1, 0, 0, 3, 4, 5, 7, 7, 6,
-	7, 2, 1, 0, 0, 1, 2, 3, 4, 5,
-	6, 7, 7, 6, 5, 4, 3, 2, 1, 0,
-	0, 1, 7, 7, 6, 6, 7, 5, 4, 3,
-	2, 0, 0, 1, 1, 2, 2, 3, 3, 4,
-	4, 5, 5, 6
+	3, 2, 1, 0, 0, 1, 2, 3, 3,
+	2, 1, 0, 0, 1, 2, 3, 3, 2, 1,
+	0, 0, 1, 2, 3, 3, 2, 1, 0, 0,
+	1, 2, 3, 3, 2, 1, 0, 0, 1, 2,
+	3, 3, 2, 1, 0, 0, 1, 2, 3
 } ;
 
 } //namespace caloobject
