@@ -4,6 +4,7 @@
 #include <limits>
 #include <map>
 #include <vector>
+#include <array>
 
 #include <CLHEP/Vector/ThreeVector.h>
 

@@ -38,5 +38,5 @@ FILE(GLOB_RECURSE sources "src/*.cc")
 add_library( ${PROJECT_NAME} SHARED ${sources} ${headers} )
 
 
-install( TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib )
+install( TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib )
 install( DIRECTORY ./include DESTINATION . FILES_MATCHING PATTERN "*.h")
