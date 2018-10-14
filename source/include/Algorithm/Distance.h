@@ -19,18 +19,18 @@ template <typename T, typename S>
 class Distance
 {
 	public :
-		Distance(){;}
-		~Distance(){;}
+		Distance() = default ;
+		~Distance() = default ;
 
-		float getDistance(T* t, S* s){ return (t->getPosition()-s->getPosition()).mag(); }
+		float getDistance(T* t, S* s) { return (t->getPosition()-s->getPosition()).mag() ; }
 };
 
 template <typename T>
 class Distance<T, CLHEP::Hep3Vector>
 {
 	public :
-		Distance(){;}
-		~Distance(){;}
+		Distance() = default ;
+		~Distance() = default ;
 
 		float getDistance(T* t, CLHEP::Hep3Vector vec){ return (t->getPosition()-vec).mag(); }
 };
@@ -39,8 +39,8 @@ template <typename S>
 class Distance<S, caloobject::CaloTrack>
 {
 	public :
-		Distance(){;}
-		~Distance(){;}
+		Distance() = default ;
+		~Distance() = default ;
 
 		float getDistance(S* s,caloobject::CaloTrack *t)
 		{
@@ -80,8 +80,8 @@ template <typename S>
 class Distance<S, float*>
 {
 	public :
-		Distance(){;}
-		~Distance(){;}
+		Distance() = default ;
+		~Distance() = default ;
 
 		float getDistance(S s,float* trackParams)
 		{

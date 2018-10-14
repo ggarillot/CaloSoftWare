@@ -6,10 +6,9 @@
 #include "CaloObject/CaloGeom.h"
 #include "CaloObject/CaloCluster.h"
 #include "Algorithm/Cluster3D.h"
-#include "Algorithm/ShowerAnalyser.h"
 
 namespace algorithm
-{ 
+{
 
 struct FSRFinderParameterSetting
 {

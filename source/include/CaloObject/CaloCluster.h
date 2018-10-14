@@ -19,7 +19,7 @@ class Cluster
 		virtual ~Cluster() ;
 
 		inline const std::vector<caloobject::CaloHit*>& getHits() const { return hits ; }
-		inline CLHEP::Hep3Vector getPosition() const { return clusterPosition ; }
+		inline const CLHEP::Hep3Vector& getPosition() const { return clusterPosition ; }
 		inline float getEnergy() const { return energy ; }
 		inline float getMaxEnergy() const { return maxEnergy ; }
 

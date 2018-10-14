@@ -7,7 +7,7 @@
 #include <algorithm>
 
 namespace algorithm
-{ 
+{
 
 struct clusterParameterSetting
 {
@@ -22,10 +22,8 @@ struct clusterParameterSetting
 class Clustering
 {
 	public :
-		Clustering()
-			: settings()
-		{;}
-		~Clustering(){;}
+		Clustering() = default ;
+		~Clustering() = default ;
 
 		void Run(HitVec& hits, std::vector<caloobject::CaloCluster2D*>& outClusterVec) ;
 		inline void SetClusterParameterSetting(clusterParameterSetting val) { settings = val ; }
@@ -35,7 +33,7 @@ class Clustering
 
 		HitVec _clusterHitList {} ;
 
-		clusterParameterSetting settings ;
+		clusterParameterSetting settings {} ;
 } ;
 
 } //namespace algorithm
