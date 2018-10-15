@@ -113,13 +113,30 @@ AnalogShower::AnalogShower(const caloobject::CaloCluster3D* cluster)
 DigitalShower::DigitalShower(const Cluster2DVec& vec)
 	: Shower(vec)
 {
-
 	for (const auto& hit : hits)
 	{
 		nHits.at(0) ++ ;
 		unsigned int e = static_cast<unsigned int>( hit->getEnergy() ) ;
 		if (e < 4) //1,2 or 3
 			nHits.at( e ) ++ ;
+	}
+}
+DigitalShower::DigitalShower(const Cluster2DVec& vec , std::array<float,3> thr)
+	: Shower(vec)
+{
+	for ( const auto& hit : hits )
+	{
+		float energy = static_cast<float>( hit->getEnergy() ) ;
+		if ( energy >= thr[2] )
+			nHits.at(3)++ ;
+		else if ( energy >= thr[1] )
+			nHits.at(2)++ ;
+		else if ( energy >= thr[0] )
+			nHits.at(1) ++ ;
+		else
+			continue ;
+
+		nHits.at(0) ++ ;
 	}
 }
 

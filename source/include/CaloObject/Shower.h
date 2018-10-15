@@ -13,8 +13,8 @@
 #include <CaloObject/CaloCluster.h>
 #include <CLHEP/Vector/ThreeVector.h>
 
-namespace algorithm 
-{ 
+namespace algorithm
+{
 
 class ShowerAnalyser ;
 
@@ -58,7 +58,7 @@ class Shower
 		inline float getEta() const { return eta ; }
 		inline float getPhi() const { return phi ; }
 
-//		inline float getShowerMax() const { return showerMax ; }
+		//		inline float getShowerMax() const { return showerMax ; }
 
 		inline const std::vector<double>& getLongitudinalProfile() const { return longitudinalProfile ; }
 		inline const std::vector<double>& getTransverseProfile() const { return transverseProfile ; }
@@ -125,7 +125,7 @@ class AnalogShower : public Shower
 		inline float getRMSEdep() const { return rmsEdep ; }
 
 
-//		inline float getEdepAtMax(){return edepAtMax;}
+		//		inline float getEdepAtMax(){return edepAtMax;}
 		inline const std::vector<double>& getEdepPerCell() const { return edepPerCell ; }
 
 		inline const std::vector<double>& getClustersEnergy() const { return clustersEnergy ; }
@@ -141,7 +141,7 @@ class AnalogShower : public Shower
 
 		float meanEdep = 0.0f ;
 		float rmsEdep = 0.0f ;
-//		float edepAtMax = 0.0f ;
+		//		float edepAtMax = 0.0f ;
 
 		std::vector<double> clustersEnergy = {} ;
 } ;
@@ -151,6 +151,7 @@ class DigitalShower : public Shower
 
 	public :
 		DigitalShower(const Cluster2DVec& vec) ;
+		DigitalShower(const Cluster2DVec& vec , std::array<float,3> thr) ;
 		~DigitalShower() { ; }
 
 		inline std::vector<int> getNHits() const { return nHits ; }
