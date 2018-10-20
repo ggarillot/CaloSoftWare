@@ -82,9 +82,9 @@ void Tracking::Run(std::vector<caloobject::CaloCluster2D*> &vec , caloobject::Ca
 
 void Tracking::TryToAddAClusterInTrack(caloobject::CaloCluster2D* cluster, caloobject::CaloTrack* &track)
 {
-	if( track->getTrackStartingCluster()->getLayerID()-cluster->getLayerID() > settings.maxDiffBetweenLayer ||
-		cluster->getLayerID()-track->getTrackLastCluster()->getLayerID() > settings.maxDiffBetweenLayer )
-		return;
+	if( track->getTrackStartingCluster()->getLayerID()-cluster->getLayerID() > 2 ||
+		cluster->getLayerID()-track->getTrackLastCluster()->getLayerID() > 2 )
+		return ;
 
 	Distance<caloobject::CaloCluster2D,caloobject::CaloTrack> dist;
 	if( dist.getDistanceInLayer(cluster,track) > settings.maxDistance )
@@ -157,6 +157,7 @@ void Tracking::TryToAddAClusterInTrack(caloobject::CaloCluster2D* cluster, caloo
 
 void Tracking::splitTrack(caloobject::CaloTrack* track)
 {
+	std::sort( track->getClusters().begin(), track->getClusters().end(), algorithm::ClusteringHelper::SortClusterByLayer );
 	int ref=track->getTrackStartingCluster()->getLayerID();
 	for(std::vector<caloobject::CaloCluster2D*>::const_iterator it=track->getClusters().begin(); it!=track->getClusters().end(); ++it){
 		if( (*it)->getLayerID()-ref>settings.maxDiffBetweenLayer )
