@@ -53,7 +53,7 @@ void Hough::selectNonDensePart( std::vector<caloobject::CaloCluster2D*> &cluster
 
 			if ( std::abs(X-x) < 50 && std::abs(Y-y) < 50 && Z==z )
 				neighbour++ ;
-			if( std::abs(X-x) < 50 && std::abs(Y-y) < 50 && Z==z && cluster2->getHits().size() > 5 )
+			if( std::abs(X-x) < 50 && std::abs(Y-y) < 50 && Z==z && cluster2->getHits().size() > settings.maximumClusterSizeForMip )
 				big_neighbour++ ;
 		}
 
@@ -99,7 +99,7 @@ std::vector< HoughBin > Hough::getHoughBinsFromZX()
 			(*it).rmTag = true ;
 	}
 	outputBins.erase(std::remove_if(outputBins.begin(),outputBins.end(),HasToBeDeleted),outputBins.end());
-	std::sort(outputBins.begin(), outputBins.end(),SortHoughBinBySize::Sort);
+	std::sort(outputBins.begin(), outputBins.end(),SortHoughBinBySize::Sort) ;
 
 	return outputBins;
 }
@@ -130,6 +130,7 @@ HoughBin Hough::getBestHoughBinFromZY( HoughBin& inputBin )
 			}
 		}
 	}
+
 	std::sort(outputBins.begin(), outputBins.end(),SortHoughBinBySize::Sort);
 	return ( *outputBins.begin() );
 }
@@ -178,7 +179,11 @@ void Hough::runHough(std::vector<caloobject::CaloCluster2D*> &clusters, std::vec
 		if (houghBins.empty() )
 			break ;
 		std::vector< HoughBin >::iterator it = houghBins.begin() ;
+
 		HoughBin bestBin = getBestHoughBinFromZY( *it ) ;
+
+		if( TestHoughBinSize( bestBin ) )
+			break ;
 
 		RemoveIsolatedClusterInHoughBin( bestBin ) ;
 

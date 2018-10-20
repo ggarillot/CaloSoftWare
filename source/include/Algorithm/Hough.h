@@ -24,7 +24,7 @@ struct HoughParameterSetting
 		unsigned int thetaSteps = 100 ;
 		unsigned int minimumNBins = 6 ;
 		unsigned int maximumClusterSizeForMip = 4 ;
-		int maximumNumberOfNeighboursForMip = 2 ;
+		int maximumNumberOfNeighboursForMip = 1 ;
 		int maximumNumberOfCoreNeighboursForMip = 0 ;
 		unsigned int minTrackSize = 5 ;
 		float transversalDistance = 85.0f ;

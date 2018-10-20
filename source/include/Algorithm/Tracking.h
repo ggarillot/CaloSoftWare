@@ -23,7 +23,7 @@ struct TrackingParameterSetting
 		float cosThetaLimit = 0.0f ;
 		float maxDistance = 20.0f ;
 		int maxDiffBetweenLayer = 2 ;
-		unsigned int minNumberOfFiredLayers = 3 ;
+		unsigned int minNumberOfFiredLayers = 4 ;
 		bool printDebug = false ;
 } ;
 
