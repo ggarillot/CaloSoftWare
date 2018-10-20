@@ -14,7 +14,7 @@
 #include "Algorithm/Distance.h"
 
 namespace algorithm
-{ 
+{
 
 struct TrackingParameterSetting
 {
@@ -22,8 +22,8 @@ struct TrackingParameterSetting
 		float chiSquareLimit = 100.0f ;
 		float cosThetaLimit = 0.0f ;
 		float maxDistance = 20.0f ;
-		int maxDiffBetweenLayer = 3 ;
-		unsigned int minNumberOfFiredLayers = 4 ;
+		int maxDiffBetweenLayer = 2 ;
+		unsigned int minNumberOfFiredLayers = 3 ;
 		bool printDebug = false ;
 } ;
 

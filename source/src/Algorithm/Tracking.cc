@@ -82,8 +82,8 @@ void Tracking::Run(std::vector<caloobject::CaloCluster2D*> &vec , caloobject::Ca
 
 void Tracking::TryToAddAClusterInTrack(caloobject::CaloCluster2D* cluster, caloobject::CaloTrack* &track)
 {
-	if( track->getTrackStartingCluster()->getLayerID()-cluster->getLayerID() > 2 ||
-		cluster->getLayerID()-track->getTrackLastCluster()->getLayerID() > 2 )
+	if( track->getTrackStartingCluster()->getLayerID()-cluster->getLayerID() > settings.maxDiffBetweenLayer ||
+		cluster->getLayerID()-track->getTrackLastCluster()->getLayerID() > settings.maxDiffBetweenLayer )
 		return ;
 
 	Distance<caloobject::CaloCluster2D,caloobject::CaloTrack> dist;

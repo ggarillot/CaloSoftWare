@@ -118,8 +118,10 @@ HoughBin Hough::getBestHoughBinFromZY( HoughBin& inputBin )
 					break;
 				}
 			}
-			if( jt!=outputBins.end() ) continue;
-			else{
+			if( jt!=outputBins.end() )
+				continue;
+			else
+			{
 				HoughBin bin;
 				bin.theta=theta;
 				bin.rho=(*it)->rhoYVec.at(theta);
@@ -179,8 +181,8 @@ void Hough::runHough(std::vector<caloobject::CaloCluster2D*> &clusters, std::vec
 		HoughBin bestBin = getBestHoughBinFromZY( *it ) ;
 
 		RemoveIsolatedClusterInHoughBin( bestBin ) ;
-//		if( TestHoughBinSize( bestBin ) )
-		if( bestBin.houghObjects.size() < 7 )
+
+		if( bestBin.houghObjects.size() < settings.minimumNBins + 1 )
 		{
 			houghBins.erase(it) ;
 			continue ;
@@ -200,13 +202,15 @@ void Hough::runHough(std::vector<caloobject::CaloCluster2D*> &clusters, std::vec
 				algo_Tracking->TryToAddAClusterInTrack((*jt)->cluster, track) ;
 			}
 
-			if( track->getClusters().size() <= 4 )
-			{
-				delete track;
-				houghBins.erase(it);
-				continue;
-			}
 			algo_Tracking->splitTrack(track) ;
+
+			if( track->getClusters().size() < settings.minTrackSize )
+			{
+				delete track ;
+				houghBins.erase(it) ;
+				continue ;
+			}
+
 			tracks.push_back(track) ;
 			for(std::vector<caloobject::CaloCluster2D*>::const_iterator jt = track->getClusters().begin() ; jt != track->getClusters().end() ; ++jt)
 			{
@@ -245,16 +249,6 @@ void Hough::runHough(std::vector<caloobject::CaloCluster2D*> &clusters, std::vec
 		delete (*it) ;
 
 	houghObjects.clear() ;
-
-	for ( auto it = tracks.begin() ; it != tracks.end() ; ++it)
-	{
-		if( (*it)->getClusters().size()<4 )
-		{
-			tracks.erase(it);
-			it--;
-		}
-	}
-
 }
 
 } //namespace algorithm

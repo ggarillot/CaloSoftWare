@@ -26,6 +26,7 @@ struct HoughParameterSetting
 		unsigned int maximumClusterSizeForMip = 4 ;
 		int maximumNumberOfNeighboursForMip = 2 ;
 		int maximumNumberOfCoreNeighboursForMip = 0 ;
+		unsigned int minTrackSize = 5 ;
 		float transversalDistance = 85.0f ;
 		float rhoTolerance = 0.10f ; // 10% (of the pixel size) tolerance for rho to be in the same (theta,rho) HoughBin
 		int isolationDistance = 3 ;
